@@ -1,15 +1,14 @@
 /**
- * AI Student Assistant - Database Configuration
- * Connects to local MongoDB or MongoMemoryServer as zero-config fallback.
+ * Campus Lost and Found System - Database Configuration
+ * Connects to MongoDB with automatic fallback to MongoMemoryServer if offline.
  */
 
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-  const connStr = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ai_student_assistant';
+  const connStr = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/campus_lost_and_found';
 
   try {
-    // Fast 2-second timeout to check local daemon
     const conn = await mongoose.connect(connStr, {
       serverSelectionTimeoutMS: 2000
     });

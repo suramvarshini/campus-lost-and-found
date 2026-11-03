@@ -1,6 +1,6 @@
 /**
- * AI Student Assistant - File Upload Middleware
- * Handles study materials (PDF, PPTX, TXT, DOCX) and assignment files.
+ * Campus Lost and Found System - File Upload Middleware
+ * Handles item photographs and claim verification proof attachments.
  */
 
 const multer = require('multer');
@@ -25,21 +25,21 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter supporting documents, code solutions, datasets, and archives
+// File filter supporting images and PDF documents for proof
 const fileFilter = (req, file, cb) => {
-  const allowedExts = /pdf|txt|pptx|ppt|docx|doc|jpeg|jpg|png|webp|zip|tar|gz|py|js|ts|java|c|cpp|cs|html|css|json|md|csv|xlsx|ipynb/;
+  const allowedExts = /jpeg|jpg|png|webp|gif|pdf/;
   const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
 
   if (allowedExts.test(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Unsupported file format. Allowed formats: PDF, DOCX, TXT, code files (.py, .js, .java, .cpp), and archives (.zip).'));
+    cb(new Error('Unsupported file format. Please upload an image (JPG, PNG, WEBP) or PDF proof.'));
   }
 };
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB limit
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: fileFilter
 });
 

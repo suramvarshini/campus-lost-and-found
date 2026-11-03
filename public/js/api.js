@@ -3,7 +3,11 @@
  * Encapsulates all backend REST API requests using standard Fetch API.
  */
 
-const API_BASE = '/api';
+// Automatically detect backend host.
+// If opened via VS Code Live Server (e.g. port 5500) or file:// protocol, fallback to Node backend on port 3000.
+const API_BASE = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '3000'))
+  ? 'http://localhost:3000/api'
+  : '/api';
 
 const API = {
   /**

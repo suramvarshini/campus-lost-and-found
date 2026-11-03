@@ -1,12 +1,12 @@
 /**
- * AI Student Assistant - Authentication Middleware
- * Protects API and MCP routes using JSON Web Tokens (JWT).
+ * Campus Lost and Found System - Authentication Middleware
+ * Protects administrative verification and item moderation endpoints using JWT.
  */
 
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_ai_assistant_jwt_secure_key_98234710928374';
+const JWT_SECRET = process.env.JWT_SECRET || 'campus_lost_and_found_jwt_secret_key_2026';
 
 const protect = async (req, res, next) => {
   let token;
@@ -44,15 +44,14 @@ const protect = async (req, res, next) => {
   }
 };
 
-// Backwards compatibility for existing admin middleware
 const protectAdmin = async (req, res, next) => {
   await protect(req, res, () => {
-    if (req.user && (req.user.role === 'admin' || req.user.role === 'student')) {
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'staff')) {
       return next();
     }
     return res.status(403).json({
       success: false,
-      message: 'Forbidden: Insufficient privileges'
+      message: 'Forbidden: Insufficient administrative privileges'
     });
   });
 };
