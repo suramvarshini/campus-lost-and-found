@@ -76,6 +76,19 @@ const startServer = async () => {
   console.log('[Server] Initializing Campus Lost and Found System...');
   await connectDB();
 
+  // Auto-seed sample items and admin if freshly initialized database (e.g. Render zero-config)
+  try {
+    const Item = require('./models/Item');
+    const itemCount = await Item.countDocuments();
+    if (itemCount === 0) {
+      console.log('[Server] Database is empty. Auto-seeding sample items and default admin...');
+      const seedDB = require('./seed');
+      await seedDB(false);
+    }
+  } catch (seedErr) {
+    console.warn('[Server Warning] Auto-seed check failed:', seedErr.message);
+  }
+
   app.listen(PORT, () => {
     console.log(`====================================================`);
     console.log(` 🔍 Campus Lost & Found Server running!`);
