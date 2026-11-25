@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tableBody.innerHTML = res.data.map(item => `
         <tr>
           <td>
-            <img src="${escapeHTML(item.imageUrl)}" width="45" height="45" style="object-fit: cover; border-radius: 6px;" onerror="this.src='https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=100'">
+            <img src="${escapeHTML(API.resolveImageUrl(item.imageUrl))}" width="45" height="45" style="object-fit: cover; border-radius: 6px;" onerror="this.src='https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=100'">
           </td>
           <td><strong>${escapeHTML(item.title)}</strong></td>
           <td><span class="badge ${item.type === 'lost' ? 'badge-lost' : 'badge-found'}">${item.type.toUpperCase()}</span></td>
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </td>
             <td style="max-width: 250px;">
               <p style="font-size: 0.85rem; line-height: 1.3;">${escapeHTML(claim.proofDescription)}</p>
-              ${claim.proofImage ? `<a href="${escapeHTML(claim.proofImage)}" target="_blank" style="font-size: 0.78rem; color: var(--primary-color);">🖼️ View Proof Image</a>` : ''}
+              ${claim.proofImage ? `<a href="${escapeHTML(API.resolveImageUrl(claim.proofImage))}" target="_blank" style="font-size: 0.78rem; color: var(--primary-color);">🖼️ View Proof Image</a>` : ''}
             </td>
             <td><span class="badge ${claimStatusClass}">${claim.status.toUpperCase()}</span></td>
             <td style="font-size: 0.82rem; color: var(--text-muted);">${formatDate(claim.createdAt)}</td>

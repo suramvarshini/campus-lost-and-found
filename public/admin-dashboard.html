@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Admin Dashboard - Campus Verification Portal</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -111,6 +111,22 @@
       <p>&copy; 2026 Campus Lost and Found System | Admin Control Panel</p>
     </div>
   </footer>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item" id="bnav-home">
+      <div class="bottom-nav-icon">🔍</div>
+      <span>Browse</span>
+    </a>
+    <a href="post-item.html" class="bottom-nav-item" id="bnav-post">
+      <div class="bottom-nav-icon">📢</div>
+      <span>Report</span>
+    </a>
+    <a href="admin-dashboard.html" class="bottom-nav-item active" id="bnav-admin">
+      <div class="bottom-nav-icon">🛡️</div>
+      <span>Admin</span>
+    </a>
+  </nav>
 
   <script src="js/api.js"></script>
   <script src="js/main.js"></script>

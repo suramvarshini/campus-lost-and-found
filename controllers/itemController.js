@@ -1,6 +1,8 @@
 /**
  * Campus Lost and Found System - Item Controller
  * Handles item creation, searching, filtering, classification, and deletion.
+ * Stores images permanently in MongoDB Atlas to prevent ephemeral file loss.
+ * Sanitizes public responses to protect students' personal contact information.
  */
 
 const Item = require('../models/Item');
@@ -38,40 +40,42 @@ exports.createItem = async (req, res) => {
     const classification = classifyItem(title, description);
     
     // Use user-provided category if selected, otherwise fallback to suggested category
-    const finalCategory = category && category !== 'auto' ? category : classification.suggestedCategory;
+    const finalCategory = category && category !== 'auto' ? category.toLowerCase() : classification.suggestedCategory;
 
-    // Process image file if uploaded
+    // Process image: store as Base64 Data URI directly in MongoDB for permanent persistence
     let imageUrl = '/uploads/default-item.png';
-    if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
+    if (req.file && req.file.buffer) {
+      const mimeType = req.file.mimetype || 'image/jpeg';
+      imageUrl = `data:${mimeType};base64,${req.file.buffer.toString('base64')}`;
     } else if (req.body.imageUrl) {
       imageUrl = req.body.imageUrl;
     }
 
+    // Persist permanently to MongoDB
     const item = await Item.create({
-      title,
-      type,
+      title: title.trim(),
+      type: type.toLowerCase(),
       category: finalCategory,
-      description,
-      location,
+      description: description.trim(),
+      location: location.trim(),
       date: date || Date.now(),
-      contactName,
-      contactEmail,
-      contactPhone: contactPhone || '',
+      contactName: contactName.trim(),
+      contactEmail: contactEmail.trim().toLowerCase(),
+      contactPhone: (contactPhone || '').trim(),
       imageUrl,
       autoTags: classification.autoTags
     });
 
     res.status(201).json({
       success: true,
-      message: 'Item reported successfully!',
+      message: 'Item reported and permanently saved to database!',
       data: item
     });
   } catch (error) {
     console.error('[Create Item Error]', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Server Error: Failed to report item'
+      message: error.message || 'Database Error: Failed to save item permanently'
     });
   }
 };
@@ -89,17 +93,17 @@ exports.getItems = async (req, res) => {
 
     // Filter by type (lost/found)
     if (type && type !== 'all') {
-      query.type = type;
+      query.type = type.toLowerCase();
     }
 
     // Filter by category
     if (category && category !== 'all') {
-      query.category = category;
+      query.category = category.toLowerCase();
     }
 
     // Filter by status (active/claimed/resolved)
     if (status && status !== 'all') {
-      query.status = status;
+      query.status = status.toLowerCase();
     }
 
     // Filter by Date Range
@@ -124,7 +128,10 @@ exports.getItems = async (req, res) => {
       ];
     }
 
-    const items = await Item.find(query).sort({ createdAt: -1 });
+    // Privacy Protection: Exclude students' contact phone and email from the public catalog feed
+    const items = await Item.find(query)
+      .select('-contactPhone -contactEmail')
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
@@ -135,7 +142,7 @@ exports.getItems = async (req, res) => {
     console.error('[Get Items Error]', error);
     res.status(500).json({
       success: false,
-      message: 'Server Error: Failed to fetch items'
+      message: 'Database Error: Failed to fetch items'
     });
   }
 };
@@ -152,7 +159,7 @@ exports.getItemById = async (req, res) => {
     if (!item) {
       return res.status(404).json({
         success: false,
-        message: 'Item not found'
+        message: 'Item not found in database'
       });
     }
 

@@ -119,19 +119,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const response = await API.createItem(formData);
 
-        if (response.success) {
-          showToast('Item posted successfully!', 'success');
+        // Verify successful database insertion
+        if (response.success && response.data && response.data._id) {
+          showToast('✅ Item successfully saved to database!', 'success');
+          postForm.reset();
+          if (imagePreview) imagePreview.style.display = 'none';
+
           setTimeout(() => {
-            window.location.href = 'index.html';
+            window.location.href = `index.html?posted=${response.data._id}&_t=${Date.now()}`;
           }, 1200);
         } else {
-          showToast(response.message || 'Failed to submit post', 'error');
+          showToast(response.message || 'Database rejected post submission.', 'error');
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalBtnText;
         }
       } catch (error) {
         console.error('Post item error:', error);
-        showToast('Server error while submitting item. Please try again.', 'error');
+        showToast(error.message || 'Server error while submitting item. Please try again.', 'error');
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalBtnText;
       }

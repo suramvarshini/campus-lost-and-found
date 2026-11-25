@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Admin Portal Login - Campus System</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -21,12 +21,12 @@
         
         <div class="form-group" style="margin-bottom: 18px;">
           <label for="admin-email">Admin Email Address</label>
-          <input type="email" id="admin-email" class="form-control" placeholder="admin@campus.edu" value="admin@campus.edu" required>
+          <input type="email" id="admin-email" class="form-control" placeholder="Enter admin email address" required>
         </div>
 
         <div class="form-group" style="margin-bottom: 22px;">
           <label for="admin-password">Password</label>
-          <input type="password" id="admin-password" class="form-control" placeholder="••••••••" value="admin123" required>
+          <input type="password" id="admin-password" class="form-control" placeholder="Enter password" required>
         </div>
 
         <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 1rem;">
@@ -36,13 +36,27 @@
       </form>
 
       <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
-        <p><strong>Default Academic Credentials:</strong></p>
-        <p>Email: <code>admin@campus.edu</code> | Pass: <code>admin123</code></p>
-        <p style="margin-top: 10px;"><a href="index.html" style="color: var(--primary-color);">← Back to Public Website</a></p>
+        <p><a href="index.html" style="color: var(--primary-color);">← Back to Public Website</a></p>
       </div>
     </div>
 
   </div>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item" id="bnav-home">
+      <div class="bottom-nav-icon">🔍</div>
+      <span>Browse</span>
+    </a>
+    <a href="post-item.html" class="bottom-nav-item" id="bnav-post">
+      <div class="bottom-nav-icon">📢</div>
+      <span>Report</span>
+    </a>
+    <a href="admin-login.html" class="bottom-nav-item active" id="bnav-admin">
+      <div class="bottom-nav-icon">🛡️</div>
+      <span>Admin</span>
+    </a>
+  </nav>
 
   <script src="js/api.js"></script>
   <script src="js/main.js"></script>

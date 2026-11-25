@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     detailContainer.innerHTML = `
       <div class="detail-grid">
         <div class="detail-image-box">
-          <img src="${escapeHTML(item.imageUrl)}" alt="${escapeHTML(item.title)}" onerror="this.src='https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=500&auto=format&fit=crop&q=60'">
+          <img src="${escapeHTML(API.resolveImageUrl(item.imageUrl))}" alt="${escapeHTML(item.title)}" onerror="this.src='https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=500&auto=format&fit=crop&q=60'">
         </div>
 
         <div class="detail-info">

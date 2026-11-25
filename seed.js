@@ -1,7 +1,7 @@
 /**
  * Campus Lost and Found System - Database Seeder Script
- * Populates MongoDB with default Admin user and 10+ realistic test items/claims.
- * Run via CLI: node seed.js
+ * Populates MongoDB with default Admin user and sample items for testing.
+ * Protected against accidental execution in production.
  */
 
 const mongoose = require('mongoose');
@@ -157,11 +157,30 @@ const sampleItems = [
 
 const seedDB = async (exitOnFinish = true) => {
   try {
-    // Clear existing collection records
-    await Item.deleteMany({});
-    await Claim.deleteMany({});
-    await User.deleteMany({});
-    console.log('[Seed] Existing collections cleared.');
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+
+    // Production Safety Guard: Never wipe records in production
+    if (isProduction) {
+      console.warn('[Seed Protection] Database wiping is strictly DISABLED in production to protect real user data.');
+      if (exitOnFinish) process.exit(0);
+      return;
+    }
+
+    // Never wipe records without explicit FORCE_CLEAR_DB confirmation
+    if (process.env.FORCE_CLEAR_DB === 'true') {
+      await Item.deleteMany({});
+      await Claim.deleteMany({});
+      await User.deleteMany({});
+      console.log('[Seed] Database cleared per FORCE_CLEAR_DB flag.');
+    } else {
+      console.log('[Seed Info] Preserving existing records (no deletion). Checking if items exist...');
+      const existingCount = await Item.countDocuments();
+      if (existingCount > 0) {
+        console.log(`[Seed Info] Database already contains ${existingCount} items. Skipping insert.`);
+        if (exitOnFinish) process.exit(0);
+        return;
+      }
+    }
 
     // Create Admin User
     const adminUser = await User.create({
@@ -191,7 +210,7 @@ const seedDB = async (exitOnFinish = true) => {
       console.log(`[Seed] Sample pending claim created for item: "${foundIdCard.title}".`);
     }
 
-    console.log('[Seed] All database seed operations finished clean!');
+    console.log('[Seed] Database seed operations finished cleanly!');
     if (exitOnFinish) process.exit(0);
   } catch (error) {
     console.error('[Seed Error]', error);
@@ -201,10 +220,14 @@ const seedDB = async (exitOnFinish = true) => {
 
 // If run directly from node CLI
 if (require.main === module) {
-  const connStr = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/campus_lost_found';
-  mongoose.connect(connStr, { serverSelectionTimeoutMS: 3000 })
+  const connStr = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/campus_lost_and_found';
+  mongoose.connect(connStr, { serverSelectionTimeoutMS: 5000 })
     .then(() => seedDB(true))
     .catch(async () => {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('[Seed Error] Cannot seed in production without valid MONGO_URI.');
+        process.exit(1);
+      }
       console.log('[Seed Info] Local MongoDB not detected. Initializing Memory Server for seeding...');
       const { MongoMemoryServer } = require('mongodb-memory-server');
       const mongod = await MongoMemoryServer.create();

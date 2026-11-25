@@ -20,15 +20,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let debounceTimer;
 
+  // Render Skeleton Loading Placeholders
+  function renderLoadingSkeletons() {
+    if (!itemsContainer) return;
+    itemsContainer.innerHTML = Array(4).fill(0).map(() => `
+      <div class="item-card skeleton-card">
+        <div class="card-image-container skeleton-box" style="height: 180px;"></div>
+        <div class="card-body">
+          <div class="skeleton-box" style="height: 20px; width: 70%; margin-bottom: 10px;"></div>
+          <div class="skeleton-box" style="height: 14px; width: 95%; margin-bottom: 6px;"></div>
+          <div class="skeleton-box" style="height: 14px; width: 60%; margin-bottom: 15px;"></div>
+          <div class="skeleton-box" style="height: 38px; width: 100%; border-radius: 8px;"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
   // Load Items with current filter parameters
   async function loadItems() {
     if (!itemsContainer) return;
 
-    itemsContainer.innerHTML = `
-      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-        <p>🔄 Loading campus items...</p>
-      </div>
-    `;
+    renderLoadingSkeletons();
 
     const filters = {
       search: searchInput ? searchInput.value.trim() : '',
@@ -46,15 +58,18 @@ document.addEventListener('DOMContentLoaded', () => {
         renderItemCards(response.data);
         updateStats(response.data);
       } else {
-        itemsContainer.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 30px; color: var(--lost-color);">${response.message}</div>`;
+        itemsContainer.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 30px; color: var(--lost-color);">${escapeHTML(response.message)}</div>`;
       }
     } catch (error) {
       console.error('Failed to load items:', error);
       itemsContainer.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--lost-color);">
-          <p>⚠️ Unable to connect to server. Please ensure local MongoDB and Node server are running.</p>
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; background: white; border-radius: 12px; border: 1px dashed var(--border-color);">
+          <p style="font-size: 1.1rem; font-weight: 700; color: var(--lost-color); margin-bottom: 6px;">⚠️ Connection Error</p>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">Unable to reach the campus server. Render instances may take 30-40 seconds to spin up on first request.</p>
+          <button id="retry-fetch-btn" class="btn btn-primary" style="padding: 10px 24px;">🔄 Tap to Retry</button>
         </div>
       `;
+      document.getElementById('retry-fetch-btn')?.addEventListener('click', loadItems);
     }
   }
 
@@ -96,10 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
         .map(t => `<span class="tag">#${escapeHTML(t)}</span>`)
         .join('');
 
+      const resolvedImage = API.resolveImageUrl(item.imageUrl);
+
       return `
         <div class="item-card">
           <div class="card-image-container">
-            <img src="${escapeHTML(item.imageUrl)}" alt="${escapeHTML(item.title)}" class="card-image" onerror="this.src='https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=500&auto=format&fit=crop&q=60'">
+            <img src="${escapeHTML(resolvedImage)}" alt="${escapeHTML(item.title)}" class="card-image" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=500&auto=format&fit=crop&q=60'">
             <div class="badge-overlay">
               <span class="badge ${badgeClass}">${statusText}</span>
               <span class="badge badge-category">${formatCategory(item.category)}</span>
@@ -155,6 +172,23 @@ document.addEventListener('DOMContentLoaded', () => {
       if (endDateFilter) endDateFilter.value = '';
       loadItems();
     });
+  }
+
+  // Refresh items trigger
+  const refreshBtn = document.getElementById('refresh-items-btn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      loadItems();
+      showToast('Refreshing items from server...', 'info');
+    });
+  }
+
+  // Check if returning from a successful post submission
+  const urlParams = new URLSearchParams(window.location.search);
+  const postedId = urlParams.get('posted');
+  if (postedId) {
+    showToast('🎉 Your reported item is live on the campus board!', 'success');
+    window.history.replaceState({}, document.title, window.location.pathname);
   }
 
   // Initial Fetch

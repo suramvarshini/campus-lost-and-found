@@ -1,6 +1,7 @@
 /**
  * Campus Lost and Found System - Claim Verification Controller
  * Handles claim submissions and admin approval/rejection workflows.
+ * Stores proof images permanently in MongoDB Atlas to avoid file loss.
  */
 
 const Claim = require('../models/Claim');
@@ -26,7 +27,7 @@ exports.createClaim = async (req, res) => {
     // Check if item exists and is active
     const item = await Item.findById(itemId);
     if (!item) {
-      return res.status(404).json({ success: false, message: 'Item not found' });
+      return res.status(404).json({ success: false, message: 'Item not found in database' });
     }
 
     if (item.status === 'claimed') {
@@ -36,10 +37,11 @@ exports.createClaim = async (req, res) => {
       });
     }
 
-    // Check for optional image proof upload
+    // Process optional proof image: store as Base64 Data URI in MongoDB for permanent persistence
     let proofImage = '';
-    if (req.file) {
-      proofImage = `/uploads/${req.file.filename}`;
+    if (req.file && req.file.buffer) {
+      const mimeType = req.file.mimetype || 'image/jpeg';
+      proofImage = `data:${mimeType};base64,${req.file.buffer.toString('base64')}`;
     }
 
     const claim = await Claim.create({
@@ -60,7 +62,7 @@ exports.createClaim = async (req, res) => {
     console.error('[Submit Claim Error]', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Server Error: Failed to submit claim'
+      message: error.message || 'Database Error: Failed to submit claim'
     });
   }
 };
