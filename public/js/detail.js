@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       try {
         const formData = new FormData(claimForm);
-        formData.append('itemId', itemId);
+        formData.set('itemId', itemId);
 
         const res = await API.createClaim(formData);
 
